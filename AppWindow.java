@@ -3,13 +3,13 @@
  * @author mahir
  */
 
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
 import javax.imageio.ImageIO;
 import java.io.*;
 import java.util.ArrayList;
+
 
 class ChessPos{
     int x;
@@ -28,9 +28,9 @@ class ChessPos{
     boolean equals(ChessPos pos){
         if(x==pos.x && y==pos.y) return true;
         return false;
-    }
-    
+    }    
 }
+
 
 class MoveCommand {
     ChessPos src;
@@ -41,6 +41,7 @@ class MoveCommand {
         this.dst= new ChessPos(dst);
     }
 }
+
 
 abstract class Piece {
     ChessPos pos;
@@ -75,6 +76,7 @@ abstract class Piece {
     abstract ArrayList<ChessPos> get_threatened_pos(ChessBoard board); //for pawns only
 }
 
+
 class King extends Piece{   
     
     King(char color, String file_path, ChessPos pos, ChessBoard board_handle){ //for starting game
@@ -89,17 +91,14 @@ class King extends Piece{
         this.moved=moved;
     }
     
-    /*King(King king, ChessBoard board_handle){
-        super(king.color, king.file_path, king.get_pos());
-        this.board_handle=board_handle;    
-    }*/
-    
-    public void move(ChessPos dst){
+    @Override
+    void move(ChessPos dst){
         pos=dst;
         board_handle.set_king_pos(dst, color);
         moved=true;
     }
     
+    @Override
     ArrayList<ChessPos> get_moveable_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ChessPos temp;
@@ -113,11 +112,12 @@ class King extends Piece{
         return positions;
     }
     
+    @Override
     ArrayList<ChessPos> get_threatened_pos(ChessBoard board){
         return  new ArrayList<ChessPos>();
-    };
-    
+    };   
 }
+
 
 class Queen extends Piece{
     Queen(char color, String file_path, ChessPos pos){
@@ -128,26 +128,24 @@ class Queen extends Piece{
         super(queen.color, queen.file_path, queen.get_pos());       
     }
     
+    @Override
     ArrayList<ChessPos> get_moveable_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ArrayList<ChessPos> temp_positions;
         ChessPos increments[]={new ChessPos(1,0),new ChessPos(1,1),new ChessPos(1,-1),new ChessPos(0,1),new ChessPos(0,-1),new ChessPos(-1,0),new ChessPos(-1,1),new ChessPos(-1,-1)};
         for(ChessPos inc : increments){
             positions.addAll(board.beam_search(get_pos(), color, inc.x, inc.y));
-            /*temp_positions=board.beam_search(get_pos(), color, inc.x, inc.y);
-            for(ChessPos temp : temp_positions){
-                positions.add(temp);
-            }*/
-            
         }
 
         return positions;
     }
     
+    @Override
     ArrayList<ChessPos> get_threatened_pos(ChessBoard board){
         return  new ArrayList<ChessPos>();
     };
 }
+
 
 class Knight extends Piece{
     Knight(char color, String file_path, ChessPos pos){
@@ -157,6 +155,7 @@ class Knight extends Piece{
     Knight(Knight knight){
         super(knight.color, knight.file_path, knight.get_pos());   
     }
+    @Override
     ArrayList<ChessPos> get_moveable_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ChessPos temp;
@@ -170,11 +169,15 @@ class Knight extends Piece{
         return positions;
     }
     
+    @Override
     ArrayList<ChessPos> get_threatened_pos(ChessBoard board){
         return  new ArrayList<ChessPos>();
     };
 
 }
+
+
+
 class Rook extends Piece{
     Rook(char color, String file_path, ChessPos pos, boolean moved){
         super(color, file_path, pos);
@@ -187,27 +190,26 @@ class Rook extends Piece{
         super(rook.color, rook.file_path, rook.get_pos());     
     }
 
+    @Override
     ArrayList<ChessPos> get_moveable_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ArrayList<ChessPos> temp_positions;
         ChessPos increments[]={new ChessPos(1,0),new ChessPos(-1,0),new ChessPos(0,1),new ChessPos(0,-1)};
         for(ChessPos inc : increments){
             positions.addAll(board.beam_search(get_pos(), color, inc.x, inc.y));
-            /*temp_positions=board.beam_search(get_pos(), color, inc.x, inc.y);
-            for(ChessPos temp : temp_positions){
-                positions.add(temp);
-            }*/
-            
         }
 
         return positions;
     }
     
+    @Override
     ArrayList<ChessPos> get_threatened_pos(ChessBoard board){
         return  new ArrayList<ChessPos>();
     };
 
 }
+
+
 
 class Bishop extends Piece{
     Bishop(char color, String file_path, ChessPos pos){
@@ -218,6 +220,7 @@ class Bishop extends Piece{
         super(bishop.color, bishop.file_path, bishop.get_pos());       
     }
     
+    @Override
     ArrayList<ChessPos> get_moveable_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ArrayList<ChessPos> temp_positions;
@@ -229,10 +232,13 @@ class Bishop extends Piece{
         return positions;
     }
     
+    @Override
     ArrayList<ChessPos> get_threatened_pos(ChessBoard board){
         return  new ArrayList<ChessPos>();
     };
 }
+
+
 
 class Pawn extends Piece{
     
@@ -250,6 +256,7 @@ class Pawn extends Piece{
         this.moved=pawn.moved;        
     }
     
+    @Override
     ArrayList<ChessPos> get_threatened_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ChessPos temp;
@@ -266,6 +273,7 @@ class Pawn extends Piece{
         return positions;
     }
 
+    @Override
     ArrayList<ChessPos> get_moveable_pos(ChessBoard board){
         ArrayList<ChessPos> positions=new ArrayList<ChessPos>();
         ArrayList<ChessPos> free_increments=new ArrayList<ChessPos>();
@@ -288,22 +296,20 @@ class Pawn extends Piece{
 }
 
 
+
 class ChessBoard {
     ArrayList<Piece> pieceList;
     ChessPos w_king_pos, b_king_pos;
 
     
     ChessBoard(){
-        //constructor list of king, queen ... pawn
-        pieceList=new ArrayList<Piece>();
-        //constructor list end
-        
+        pieceList=new ArrayList<Piece>();        
         b_king_pos=new ChessPos(5, 1);
         w_king_pos=new ChessPos(5, 8);
     }
     
     
-    public void init(){
+    void init(){
     	pieceList.add(new King('b', "./Pictures/bking.png", new ChessPos(5,1), this));
         pieceList.add(new Queen('b', "./Pictures/bqueen.png", new ChessPos(4,1)));
         pieceList.add(new Knight('b', "./Pictures/bknight.png", new ChessPos(2,1)));
@@ -339,7 +345,7 @@ class ChessBoard {
         pieceList.add(new Pawn('w', "./Pictures/wpawn.png", new ChessPos(8,7)));
     }
     
-    public ChessBoard copy_board(){
+    ChessBoard copy_board(){
         ChessBoard newBoard= new ChessBoard();
         newBoard.pieceList=new ArrayList<Piece>();
         
@@ -369,19 +375,19 @@ class ChessBoard {
         return newBoard;
     }
     
-    public Piece get_piece(ChessPos pos){
+    Piece get_piece(ChessPos pos){
         for(Piece piece : pieceList){     	
             if(piece.get_pos().equals(pos)) return piece;  
         }
         return null;
     }
     
-    public void set_king_pos(ChessPos pos, char color){
+    void set_king_pos(ChessPos pos, char color){
         if(color=='w') w_king_pos=new ChessPos(pos);
         else b_king_pos=new ChessPos(pos);
     }
     
-    public ArrayList<ChessPos> beam_search(ChessPos start_pos, char own_color, int inc_x, int inc_y){
+    ArrayList<ChessPos> beam_search(ChessPos start_pos, char own_color, int inc_x, int inc_y){
     	Piece piece;
     	ChessPos pos;
         ArrayList<ChessPos> positions= new ArrayList<ChessPos>();
@@ -403,7 +409,7 @@ class ChessBoard {
     }
     
     
-    public ChessPos spot_search(ChessPos start_pos, char own_color, int inc_x, int inc_y, boolean threat_only, boolean free_only){
+    ChessPos spot_search(ChessPos start_pos, char own_color, int inc_x, int inc_y, boolean threat_only, boolean free_only){
     	Piece piece;
     	ChessPos pos;
         int x=start_pos.x+=inc_x;
@@ -431,7 +437,7 @@ class ChessBoard {
     
     
     
-    public void execute_move(MoveCommand move){
+    void execute_move(MoveCommand move){
         
         Piece source_piece=get_piece(move.src);
         
@@ -479,10 +485,11 @@ class ChessBoard {
             }
 
             return false;
-    }
-    
-    
+    }    
 }
+
+
+
 class ChessGame {
     char turn;
     ChessBoard board;
@@ -503,7 +510,7 @@ class ChessGame {
 	}
         System.out.println("Executing Move");
         board.execute_move(input_move);       
-        promotion_check(turn, board);
+        promotion_check();
         if(turn=='w') turn='b';
         else turn='w';
     }
@@ -581,7 +588,7 @@ class ChessGame {
         return !board_copy.check_for_check(check_pos_list, turn);
     }
     
-    void promotion_check(char turn, ChessBoard board){
+    void promotion_check(){
         Piece piece;
         int x, y;
         if(turn=='w') y=1;
@@ -610,7 +617,9 @@ class ChessGame {
         }      
     }          
 }
-    
+
+
+
 public class AppWindow extends Frame{
 
     Color color_matrix[][];
@@ -622,9 +631,9 @@ public class AppWindow extends Frame{
         for(int i=0; i<8; i++){
             for(int j=0; j<8; j++){
                 if ((i % 2 == 0) == (j % 2 == 0))
-                    color_matrix[i][j]=Color.BLUE;
-                else
                     color_matrix[i][j]=Color.CYAN;
+                else
+                    color_matrix[i][j]=Color.BLUE;
             }
         }
         
@@ -673,6 +682,8 @@ public class AppWindow extends Frame{
 }
 
 
+
+
 class MyMouseAdapter extends MouseAdapter{
     AppWindow app_win;
     int row, col;
@@ -695,7 +706,7 @@ class MyMouseAdapter extends MouseAdapter{
             //determine row
             col=(x-50)/50;
             row=(y-50)/50;
-			System.out.println((col+1)+","+(row+1)+" selected");
+            System.out.println((col+1)+","+(row+1)+" selected");
             app_win.color_matrix[col][row]=Color.RED;
             click_counter++;
             app_win.repaint();
@@ -707,9 +718,9 @@ class MyMouseAdapter extends MouseAdapter{
                 for(int i=0; i<8; i++){
                     for(int j=0; j<8; j++){
                         if ((i % 2 == 0) == (j % 2 == 0))
-                            app_win.color_matrix[i][j]=Color.BLUE;
+                            app_win.color_matrix[i][j]=Color.CYAN;
                         else
-                             app_win.color_matrix[i][j]=Color.CYAN;
+                             app_win.color_matrix[i][j]=Color.BLUE;
                     }
                 }
                 app_win.game.play(new MoveCommand(start_pos, end_pos));
@@ -717,6 +728,8 @@ class MyMouseAdapter extends MouseAdapter{
         }
     }
 }
+
+
 
 class MyWindowAdapter extends WindowAdapter {
     public void windowClosing(WindowEvent we){
@@ -780,6 +793,7 @@ class PromotionWindow extends Frame implements ActionListener{
         this.app_win.repaint();
         this.dispose();
     }
-    
-    
 }
+    
+    
+
